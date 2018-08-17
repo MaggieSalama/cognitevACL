@@ -1,4 +1,4 @@
-import {Injectable ,Component, OnInit } from '@angular/core';
+import {Component, OnInit } from '@angular/core';
 import { AclService } from '../acl.service';
 
 @Component({
@@ -6,7 +6,6 @@ import { AclService } from '../acl.service';
   templateUrl: './createroles.component.html',
   styleUrls: ['./createroles.component.css']
 })
-@Injectable()
 export class CreaterolesComponent implements OnInit {
 
   constructor(private acl: AclService) { 

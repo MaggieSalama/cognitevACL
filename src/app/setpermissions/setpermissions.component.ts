@@ -31,13 +31,15 @@ export class SetpermissionsComponent implements OnInit {
     this.acl
       .an("admin")
       .can("POST")
-      .to("/users");
+      .to("/admin/:userId/articles")
+      .when((params, user) => params.userId === user.id);
+      
     this.acl
       .a("user")
       .can("POST")
       .to("/users/:userId/articles")
       .when((params, user) => params.userId === user.id);
-
+      
     this.acl
       .a("guest")
       .can("GET")

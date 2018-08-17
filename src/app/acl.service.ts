@@ -6,13 +6,15 @@ import { HttpMethod } from "../../node_modules/blocking-proxy/built/lib/webdrive
 })
 /** main Acl Class */
 export class AclService {
-  constructor(acl:AclService) {}
+  constructor(acl: AclService) {}
   // constructor(public name: string) {}
-  currentRole: string;
-  currentVerb: HttpMethod;
-  currentRolePermissionList;
+  protected currentRole: string;
+  protected currentVerb: HttpMethod;
+  protected currentEndPoint: string;
+  protected currentRolePermissionList;
+  protected currentPermission;
   //route:string;
-  accessList = {
+  protected accessList = {
     roles: [],
     allPermissionsList: {}
   };
@@ -42,7 +44,7 @@ export class AclService {
    */
   protected isAvailableRole(role: string): boolean {
     if (this.accessList.roles.indexOf(role) === -1) {
-      console.log(role +" not found in role list");
+      console.log(role + " not found in role list");
       return false;
     } else {
       return true;
@@ -75,7 +77,6 @@ export class AclService {
    * @param role
    */
   a(role: string): any {
-    
     this.currentRole = role;
     return this;
   }
@@ -88,7 +89,6 @@ export class AclService {
    */
 
   can(httpVerb: HttpMethod): any {
-    
     this.currentVerb = httpVerb;
     return this;
   }
@@ -109,6 +109,7 @@ export class AclService {
         };
       }
       /**assign permission to the role */
+      this.currentEndPoint = endPoint;
       this.accessList.allPermissionsList[
         this.currentRole
       ].rolePermissionList.push({
@@ -129,44 +130,26 @@ export class AclService {
     return this;
   }
 
-  /* when(params: object): boolean {
-    let definedUrl=this.accessList.allPermissionsList[this.currentRole].rolePermissionList[0].route;
-    let definedUrlSplitted  = definedUrl.split('/');
-    let urlUserID = definedUrlSplitted[2];
-    let paramUserId = params['userId'];
-    if (urlUserID == paramUserId) {
-      console.log("user with "+paramUserId+" have access on this page");
-      this.optionalCondition = true;
-    } else {
-      console.log("user with "+paramUserId+" dont have access on this page");
-      this.optionalCondition=false;
-      
-    }
-    return this.optionalCondition;
-  }*/
-  /*
-  when(callback: (params: object,user:object) => boolean,par1: object, par2?: object ) : boolean {
- 
-    if(par1 == undefined || par2 ==undefined){
-      //console.log(callback(par1,par2));
-      return false;   
-    }else{
-      console.log(callback(par1,par2));
-      return callback(par1,par2);    
-
-    }
-    
-}*/
   when(callback: (params: object, user: object) => boolean): void {
-    /*this.accessList.allPermissionsList[this.currentRole].rolePermissionList.push({
-    optionalCondition: callback,
- 
-  });
-  console.log(this.accessList.allPermissionsList[this.currentRole].rolePermissionList.optionalCondition)
-  */
+    var currentObj = this.accessList.allPermissionsList[this.currentRole]
+      .rolePermissionList;
+    var l = currentObj.length;
+    for (; l--; ) {
+      // Grab the the current role
+      let permission = currentObj[l];
+      if (
+        permission.verb === this.currentVerb &&
+        permission.route === this.currentEndPoint
+      ) {
+        let currentPerm = this.accessList.allPermissionsList[this.currentRole]
+          .rolePermissionList[l];
+        currentPerm.additionalCondition = callback;
+
+        console.log("optional condition has been added", currentPerm);
+      }
+    }
   }
 
-  
   /**retrieve all available roles */
   getAllPermissionsList() {
     return this.accessList.allPermissionsList;
@@ -175,20 +158,18 @@ export class AclService {
 
   if(role): any {
     if (!this.isAvailableRole(role)) {
-      return ;
-      
+      return;
     } else {
-      this.currentRole=role;
-      this.currentRolePermissionList=this.accessList.allPermissionsList[role].rolePermissionList;
-     // console.log(this);
+      this.currentRole = role;
+      this.currentRolePermissionList = this.accessList.allPermissionsList[
+        role
+      ].rolePermissionList;
+      // console.log(this);
       return this;
     }
   }
 
-  
-
-  from2(endpoint: string): boolean {
-
+  from2(endPoint: string): any {
     if (!this.isAvailableRole(this.currentRole)) {
       /**if role is available then check for permissions  */
       console.log("no role");
@@ -197,30 +178,80 @@ export class AclService {
         console.log("no valid verb");
         return false;
       }
-
     }
-    var currentUser = this.currentRolePermissionList;
-    var l = currentUser.length;
+
+    this.currentEndPoint = endPoint;
+    let currentUserPermission = this.currentRolePermissionList;
+    let l = currentUserPermission.length;
     for (; l--; ) {
       // Grab the the current role
-      let permission = currentUser[l];
-     // console.log(this.currentVerb)
+      let permission = currentUserPermission[l];
+      // console.log(this.currentVerb)
 
-      if (permission.verb === this.currentVerb && permission.route === endpoint) {
-        console.log(this.currentRole + " can " + this.currentVerb + " (from/to) " + endpoint);
+      if (
+        permission.verb === this.currentVerb &&
+        permission.route === endPoint
+      ) {
+        console.log(
+          this.currentRole +
+            " can " +
+            this.currentVerb +
+            " (from/to) " +
+            endPoint
+        );
         return true;
       }
     }
-    // We made it here, so the ability wasn't found in attached roles
-    console.log(this.currentRole + " can't " + this.currentVerb + " (from/to) " + endpoint);
 
-    return false;
+    // so the permission not found in attached list
+    console.log(
+      this.currentRole + " can't " + this.currentVerb + " (from/to) " + endPoint
+    );
+
+    return this;
   }
+  when2(user: object) {
+    let currentObject = this.getcurrentObject();
+    let definedUrl = this.currentEndPoint;
+    let definedUrlSplitted = definedUrl.split("/");
+    let urlParamId = definedUrlSplitted[2];
 
+    let params = {
+      userId: +urlParamId
+    };
+
+    if (currentObject.additionalCondition(params, user)) {
+      console.log(
+        this.currentRole +
+          " with id " +
+          urlParamId +
+          " can " +
+          this.currentVerb +
+          " (from/to) " +
+          this.currentEndPoint
+      );
+    } 
+  }
+  protected getcurrentObject(): any {
+    var currentObj = this.accessList.allPermissionsList[this.currentRole]
+      .rolePermissionList;
+    var l = currentObj.length;
+
+    for (; l--; ) {
+      // Grab the the current role
+      let permission = currentObj[l];
+      if (permission.verb === this.currentVerb) {
+        let currentPerm = this.accessList.allPermissionsList[this.currentRole]
+          .rolePermissionList[l];
+        // console.log(currentPerm);
+        return currentPerm;
+      }
+    }
+  }
 }
 
 /**  acl interface for method aliasing */
-export  interface AclService {
+export interface AclService {
   /** alias of (a) */
   an: typeof AclService.prototype.a;
   /** alias of (from) */
