@@ -8,11 +8,8 @@ import { A,An,AclService } from "../acl.service";
   styleUrls: ["./setpermissions.component.css"]
 })
 export class SetpermissionsComponent implements OnInit {
-  a = new A();
-  an= new An();
-  
-
-  constructor() {
+ 
+  constructor(private acl:AclService) {
     this.setPermissions();
     console.log(
       "available list of  permissions",
@@ -20,38 +17,40 @@ export class SetpermissionsComponent implements OnInit {
     );
 
   }
-  
+
   
   /**permission getter*/
   getPermissions() {
-    return this.a.getAllPermissionsList();
+    
+    return this.acl.getAllPermissionsList();
 
   }
   /**permission setter */
 
   setPermissions() {
-    this.an
-      .an("admin")
+   
+    new An("admin")
+      
       .can("GET")
       .from("/users");
-    this.an
-      .an("admin")
+    new An("admin")
+      
       .can("POST")
       .to("/admin/:userId/articles")
       .when((params, user) => params.userId === user.id);
       
-    this.a
-      .a("user")
+    new A("user")
+     
       .can("POST")
       .to("/users/:userId/articles")
       .when((params, user) => params.userId === user.id);
       
-    this.a
-      .a("guest")
+    new A("guest")
+     
       .can("GET")
       .from("/articles");
-    this.an
-      .an("editor")
+    new An("editor")
+      
       .can("DELETE")
       .from("/contenteditorpage");
      
