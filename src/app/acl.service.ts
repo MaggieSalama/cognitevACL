@@ -73,13 +73,7 @@ export class AclService {
 
 }
 
-/**  acl interface for method aliasing */
-export interface AclService {
-  /** alias of (a) */
-  an: typeof permissionSetting.prototype.a;
-  /** alias of (from) */
-  to: typeof permissionSetting.prototype.from;
-}
+
 
 class permissionSetting extends AclService {
   constructor() {
@@ -88,7 +82,10 @@ class permissionSetting extends AclService {
 
   }
 
-  
+  /** alias of (a) */
+  an: typeof permissionSetting.prototype.a;
+  /** alias of (from) */
+  to: typeof permissionSetting.prototype.from;
   /**************************************************permission setting methods */
   /**setting permissions
    * *
@@ -178,6 +175,7 @@ permissionSetting.prototype.an = permissionSetting.prototype.a;
 /**intialize (to) method with (from) method */
 permissionSetting.prototype.to = permissionSetting.prototype.from;
 
+
 export class A extends permissionSetting {
   constructor() {
     super();
@@ -197,6 +195,7 @@ export class Check extends permissionSetting {
     super();
   }
   /**************************************************checking permissions methods */
+  to:typeof Check.prototype.from;
 
   public if(role): any {
     if (!this.isAvailableRole(role)) {
@@ -290,5 +289,7 @@ export class Check extends permissionSetting {
       }
     }
   }
-}
 
+}
+/**intialize (to) method with (from) method -- check permissions*/
+Check.prototype.to = Check.prototype.from;

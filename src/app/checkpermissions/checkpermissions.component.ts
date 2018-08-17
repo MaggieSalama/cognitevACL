@@ -20,12 +20,12 @@ export class CheckpermissionsComponent implements OnInit {
    
     this.check.if("admin").can("GET").from("/users");//true  
 
-    this.check.if('guest').can('POST').from('/users'); // false
+    this.check.if('guest').can('POST').to('/users'); // false
 
 
-    this.check.if('admin').can('POST').from('/admin/12/articles').when({ id: 12 }); // true
+    this.check.if('admin').can('POST').to('/admin/12/articles').when({ id: 12 }); // true
 
-    this.check.if('user').can('POST').from('/users/10/articles').when({ id: 11 }); //false 
+    this.check.if('user').can('POST').to('/users/10/articles').when({ id: 11 }); //false 
     
   }
 
