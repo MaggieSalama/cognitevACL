@@ -1,7 +1,6 @@
 import { Component, OnInit } from "@angular/core";
-//import { HttpMethod } from '../../../node_modules/blocking-proxy/built/lib/webdriver_commands';
-import { AclService } from "../acl.service";
-import { PARAMETERS } from "../../../node_modules/@angular/core/src/util/decorators";
+import { HttpMethod } from '../../../node_modules/blocking-proxy/built/lib/webdriver_commands';
+import { A,An,AclService } from "../acl.service";
 
 @Component({
   selector: "app-setpermissions",
@@ -9,42 +8,49 @@ import { PARAMETERS } from "../../../node_modules/@angular/core/src/util/decorat
   styleUrls: ["./setpermissions.component.css"]
 })
 export class SetpermissionsComponent implements OnInit {
-  constructor(private acl: AclService) {
+  a = new A();
+  an= new An();
+  
+
+  constructor() {
     this.setPermissions();
     console.log(
       "available list of  permissions",
       this.getPermissions()
     );
-  }
 
+  }
+  
+  
   /**permission getter*/
   getPermissions() {
-    return this.acl.getAllPermissionsList();
+    return this.a.getAllPermissionsList();
+
   }
   /**permission setter */
 
   setPermissions() {
-    this.acl
+    this.an
       .an("admin")
       .can("GET")
       .from("/users");
-    this.acl
+    this.an
       .an("admin")
       .can("POST")
       .to("/admin/:userId/articles")
       .when((params, user) => params.userId === user.id);
       
-    this.acl
+    this.a
       .a("user")
       .can("POST")
       .to("/users/:userId/articles")
       .when((params, user) => params.userId === user.id);
       
-    this.acl
+    this.a
       .a("guest")
       .can("GET")
       .from("/articles");
-    this.acl
+    this.an
       .an("editor")
       .can("DELETE")
       .from("/contenteditorpage");

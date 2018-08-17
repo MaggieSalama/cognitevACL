@@ -6,15 +6,15 @@ import { HttpMethod } from "../../node_modules/blocking-proxy/built/lib/webdrive
 })
 /** main Acl Class */
 export class AclService {
-  constructor(acl: AclService) {}
+  constructor() {}
   // constructor(public name: string) {}
-  protected currentRole: string;
-  protected currentVerb: HttpMethod;
-  protected currentEndPoint: string;
-  protected currentRolePermissionList;
-  protected currentPermission;
+  public currentRole: string;
+  public currentVerb: HttpMethod;
+  public currentEndPoint: string;
+  public currentRolePermissionList;
+  public currentPermission;
   //route:string;
-  protected accessList = {
+  static accessList = {
     roles: [],
     allPermissionsList: {}
   };
@@ -26,15 +26,15 @@ export class AclService {
    *  **/
   createRole(role: string): void {
     console.log(role + " role has been added successfuly");
-    this.accessList.roles.push(role);
+    AclService.accessList.roles.push(role);
   }
   /**retrieve all available roles */
   getRoles(): string[] {
-    return this.accessList.roles;
+    return AclService.accessList.roles;
   }
   /** Remove all roles**/
   removeRoles(): void {
-    this.accessList.roles = [];
+    AclService.accessList.roles = [];
   }
 
   /************************************************** helper methods */
@@ -42,8 +42,8 @@ export class AclService {
    * @param role
    * return boolean
    */
-  protected isAvailableRole(role: string): boolean {
-    if (this.accessList.roles.indexOf(role) === -1) {
+  public isAvailableRole(role: string): boolean {
+    if (AclService.accessList.roles.indexOf(role) === -1) {
       console.log(role + " not found in role list");
       return false;
     } else {
@@ -55,8 +55,8 @@ export class AclService {
    * @param role
    * return boolean
    */
-  protected hasPermission(role: string): boolean {
-    return typeof this.accessList.allPermissionsList[role] === "object";
+  public hasPermission(role: string): boolean {
+    return typeof AclService.accessList.allPermissionsList[role] === "object";
   }
 
   /**
@@ -65,18 +65,36 @@ export class AclService {
    * @param role
    * @returns {Array}
    */
-  protected getUserPermissionsList(role): boolean {
+  public getUserPermissionsList(role): boolean {
     return this.hasPermission(role)
-      ? this.accessList.allPermissionsList[role]
+      ? AclService.accessList.allPermissionsList[role]
       : [];
   }
 
+}
+
+/**  acl interface for method aliasing */
+export interface AclService {
+  /** alias of (a) */
+  an: typeof permissionSetting.prototype.a;
+  /** alias of (from) */
+  to: typeof permissionSetting.prototype.from;
+}
+
+class permissionSetting extends AclService {
+  constructor() {
+    super();
+    
+
+  }
+
+  
   /**************************************************permission setting methods */
   /**setting permissions
    * *
    * @param role
    */
-  a(role: string): any {
+  public a(role: string): any {
     this.currentRole = role;
     return this;
   }
@@ -88,7 +106,7 @@ export class AclService {
    * @param endpoint
    */
 
-  can(httpVerb: HttpMethod): any {
+  public can(httpVerb: HttpMethod): any {
     this.currentVerb = httpVerb;
     return this;
   }
@@ -98,19 +116,19 @@ export class AclService {
    * @param endPoint
    *
    */
-  from(endPoint: string): any {
+  public from(endPoint: string): any {
     /**check if user have role */
     if (this.isAvailableRole(this.currentRole)) {
       /**if role is available then check for permissions  */
       if (!this.hasPermission(this.currentRole)) {
         //if no permission assigned define an array of RolePermissionsList
-        this.accessList.allPermissionsList[this.currentRole] = {
+        AclService.accessList.allPermissionsList[this.currentRole] = {
           rolePermissionList: []
         };
       }
       /**assign permission to the role */
       this.currentEndPoint = endPoint;
-      this.accessList.allPermissionsList[
+      AclService.accessList.allPermissionsList[
         this.currentRole
       ].rolePermissionList.push({
         verb: this.currentVerb,
@@ -130,8 +148,8 @@ export class AclService {
     return this;
   }
 
-  when(callback: (params: object, user: object) => boolean): void {
-    var currentObj = this.accessList.allPermissionsList[this.currentRole]
+  public when(callback: (params: object, user: object) => boolean): void {
+    var currentObj = AclService.accessList.allPermissionsList[this.currentRole]
       .rolePermissionList;
     var l = currentObj.length;
     for (; l--; ) {
@@ -141,7 +159,7 @@ export class AclService {
         permission.verb === this.currentVerb &&
         permission.route === this.currentEndPoint
       ) {
-        let currentPerm = this.accessList.allPermissionsList[this.currentRole]
+        let currentPerm = AclService.accessList.allPermissionsList[this.currentRole]
           .rolePermissionList[l];
         currentPerm.additionalCondition = callback;
 
@@ -152,16 +170,40 @@ export class AclService {
 
   /**retrieve all available roles */
   getAllPermissionsList() {
-    return this.accessList.allPermissionsList;
+    return AclService.accessList.allPermissionsList;
+  }
+}
+/**intialize (an) method with (a) method */
+permissionSetting.prototype.an = permissionSetting.prototype.a;
+/**intialize (to) method with (from) method */
+permissionSetting.prototype.to = permissionSetting.prototype.from;
+
+export class A extends permissionSetting {
+  constructor() {
+    super();
+   
+  }
+
+
+}
+export class An extends permissionSetting {
+  constructor() {
+    super();
+  }
+}
+
+export class Check extends permissionSetting {
+  constructor() {
+    super();
   }
   /**************************************************checking permissions methods */
 
-  if(role): any {
+  public if(role): any {
     if (!this.isAvailableRole(role)) {
       return;
     } else {
       this.currentRole = role;
-      this.currentRolePermissionList = this.accessList.allPermissionsList[
+      this.currentRolePermissionList = AclService.accessList.allPermissionsList[
         role
       ].rolePermissionList;
       // console.log(this);
@@ -169,7 +211,7 @@ export class AclService {
     }
   }
 
-  from2(endPoint: string): any {
+  public from(endPoint: string): any {
     if (!this.isAvailableRole(this.currentRole)) {
       /**if role is available then check for permissions  */
       console.log("no role");
@@ -210,7 +252,7 @@ export class AclService {
 
     return this;
   }
-  when2(user: object) {
+  public when(user: object) {
     let currentObject = this.getcurrentObject();
     let definedUrl = this.currentEndPoint;
     let definedUrlSplitted = definedUrl.split("/");
@@ -220,7 +262,7 @@ export class AclService {
       userId: +urlParamId
     };
 
-    if (currentObject.additionalCondition(params, user)) {
+     if(currentObject.additionalCondition(params, user)) {
       console.log(
         this.currentRole +
           " with id " +
@@ -232,8 +274,8 @@ export class AclService {
       );
     } 
   }
-  protected getcurrentObject(): any {
-    var currentObj = this.accessList.allPermissionsList[this.currentRole]
+  public getcurrentObject(): any {
+    var currentObj = AclService.accessList.allPermissionsList[this.currentRole]
       .rolePermissionList;
     var l = currentObj.length;
 
@@ -241,7 +283,7 @@ export class AclService {
       // Grab the the current role
       let permission = currentObj[l];
       if (permission.verb === this.currentVerb) {
-        let currentPerm = this.accessList.allPermissionsList[this.currentRole]
+        let currentPerm = AclService.accessList.allPermissionsList[this.currentRole]
           .rolePermissionList[l];
         // console.log(currentPerm);
         return currentPerm;
@@ -250,39 +292,3 @@ export class AclService {
   }
 }
 
-/**  acl interface for method aliasing */
-export interface AclService {
-  /** alias of (a) */
-  an: typeof AclService.prototype.a;
-  /** alias of (from) */
-  to: typeof AclService.prototype.from;
-}
-/**intialize (an) method with (a) method */
-AclService.prototype.an = AclService.prototype.a;
-/**intialize (to) method with (from) method */
-AclService.prototype.to = AclService.prototype.from;
-
-class permissionSetting extends AclService {
-  constructor(acl: AclService) {
-    super(acl);
-  }
-}
-export class a extends AclService {
-  constructor(acl: AclService) {
-    super(acl);
-  }
-}
-export class an extends AclService {
-  constructor(acl: AclService) {
-    super(acl);
-  }
-}
-
-export class Check extends AclService {
-  constructor(acl: AclService) {
-    super(acl);
-  }
-  test() {
-    console.log("maggie");
-  }
-}
